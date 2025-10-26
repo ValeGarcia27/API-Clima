@@ -18,7 +18,7 @@ MONGO_URI = os.getenv("MONGO_URI")
 # =========================
 # CONFIGURACIÓN DE WEATHER API
 # =========================
-CITY = "Bogota"
+CITY = "Cali"
 URL = f"http://api.weatherapi.com/v1/current.json?key={API_KEY}&q={CITY}&aqi=no"
 
 # =========================
@@ -103,3 +103,4 @@ threading.Thread(target=run_pipeline, daemon=True).start()
 if __name__ == '__main__':
     # Render necesita que se exponga un puerto (por defecto usa el 8080)
     app.run(host='0.0.0.0', port=8080)
+
