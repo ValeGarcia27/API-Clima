@@ -81,12 +81,13 @@ def obtener_datos_clima():
 # FUNCIÓN PARA EJECUTAR EL PIPELINE DE FORMA CONTINUA
 
 def run_pipeline():
-    schedule.every(1).minutes.do(obtener_datos_clima)
-    print("🚀 Pipeline de WeatherAPI iniciado... (captura cada minuto)")
+    schedule.every(10).seconds.do(obtener_datos_clima)
+    print("🚀 Pipeline de WeatherAPI iniciado... (captura cada 10 segundos)")
 
     while True:
         schedule.run_pending()
         time.sleep(0.2)
+
 
 # =========================
 # SERVIDOR FLASK (NECESARIO PARA RENDER)
@@ -103,6 +104,7 @@ threading.Thread(target=run_pipeline, daemon=True).start()
 if __name__ == '__main__':
     # Render necesita que se exponga un puerto (por defecto usa el 8080)
     app.run(host='0.0.0.0', port=8080)
+
 
 
 
