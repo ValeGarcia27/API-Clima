@@ -18,7 +18,7 @@ MONGO_URI = os.getenv("MONGO_URI")
 # =========================
 # CONFIGURACIÓN DE WEATHER API
 # =========================
-CITY = "Cali"
+CITY = "Bucaramanga"
 URL = f"http://api.weatherapi.com/v1/current.json?key={API_KEY}&q={CITY}&aqi=no"
 
 # =========================
@@ -86,7 +86,7 @@ def run_pipeline():
 
     while True:
         schedule.run_pending()
-        time.sleep(1)
+        time.sleep(0.2)
 
 # =========================
 # SERVIDOR FLASK (NECESARIO PARA RENDER)
@@ -103,4 +103,5 @@ threading.Thread(target=run_pipeline, daemon=True).start()
 if __name__ == '__main__':
     # Render necesita que se exponga un puerto (por defecto usa el 8080)
     app.run(host='0.0.0.0', port=8080)
+
 
