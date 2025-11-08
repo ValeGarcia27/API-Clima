@@ -16,12 +16,6 @@ API_KEY = os.getenv("WEATHER_API_KEY")
 MONGO_URI = os.getenv("MONGO_URI")
 
 # =========================
-# CONFIGURACIÓN DE WEATHER API
-# =========================
-CITY = "Bucaramanga"
-URL = f"http://api.weatherapi.com/v1/current.json?key={API_KEY}&q={CITY}&aqi=no"
-
-# =========================
 # CONEXIÓN A MONGODB ATLAS
 # =========================
 client = MongoClient(MONGO_URI)
@@ -29,12 +23,28 @@ db = client["Clima"]
 collection = db["ciudad"]
 
 # =========================
+# LISTA DE CIUDADES EN COLOMBIA
+# =========================
+CIUDADES_CO = [
+    "Bogota", "Medellin", "Cali", "Barranquilla", "Cartagena",
+    "Bucaramanga", "Pereira", "Cucuta", "Manizales", "Santa Marta",
+    "Armenia", "Popayan", "Monteria", "Neiva", "Villavicencio"
+]
+indice_ciudad = 0  # índice global
+
+# =========================
 # FUNCIÓN PRINCIPAL DE PIPELINE
 # =========================
 def obtener_datos_clima():
-    try:
-        print(f"\n[{datetime.now()}] 🔄 Consultando clima de {CITY}...")
+    global indice_ciudad
 
+    # Seleccionar ciudad actual
+    ciudad_actual = CIUDADES_CO[indice_ciudad]
+
+    try:
+        print(f"\n[{datetime.now()}] 🔄 Consultando clima de {ciudad_actual}...")
+
+        URL = f"http://api.weatherapi.com/v1/current.json?key={API_KEY}&q={ciudad_actual},Colombia&aqi=no"
         response = requests.get(URL)
         data = response.json()
 
@@ -69,25 +79,27 @@ def obtener_datos_clima():
 
         collection.insert_one(registro)
 
-        print(f"✅ Guardado | Temp: {registro['clima']['temperatura_c']}°C | "
-              f"Sensación: {registro['clima']['sensacion_c']}°C | "
+        print(f"✅ Guardado ({ciudad_actual}) | Temp: {registro['clima']['temperatura_c']}°C | "
               f"Humedad: {registro['clima']['humedad']}% | "
               f"Condición: {registro['clima']['condicion']}")
 
     except Exception as e:
-        print(f"❌ Error al obtener o guardar datos: {e}")
+        print(f"❌ Error al obtener o guardar datos de {ciudad_actual}: {e}")
+
+    # Avanzar a la siguiente ciudad (cíclico)
+    indice_ciudad = (indice_ciudad + 1) % len(CIUDADES_CO)
+
 
 # =========================
 # FUNCIÓN PARA EJECUTAR EL PIPELINE DE FORMA CONTINUA
-
+# =========================
 def run_pipeline():
     schedule.every(10).seconds.do(obtener_datos_clima)
-    print("🚀 Pipeline de WeatherAPI iniciado... (captura cada 10 segundos)")
+    print("🚀 Pipeline de WeatherAPI iniciado... (captura cada 10 segundos y cambia de ciudad)")
 
     while True:
         schedule.run_pending()
         time.sleep(0.2)
-
 
 # =========================
 # SERVIDOR FLASK (NECESARIO PARA RENDER)
@@ -96,7 +108,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "☁️ Weather pipeline is running successfully!"
+    return "☁️ Weather pipeline is running successfully and rotating cities across Colombia!"
 
 # Ejecuta el pipeline en un hilo separado
 threading.Thread(target=run_pipeline, daemon=True).start()
@@ -104,7 +116,3 @@ threading.Thread(target=run_pipeline, daemon=True).start()
 if __name__ == '__main__':
     # Render necesita que se exponga un puerto (por defecto usa el 8080)
     app.run(host='0.0.0.0', port=8080)
-
-
-
-
